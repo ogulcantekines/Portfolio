@@ -1,4 +1,4 @@
-import express, { Express } from 'express'
+import express, { Express, NextFunction, Request, Response } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
@@ -20,6 +20,11 @@ app.use('/api', router)
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
+})
+
+app.use((_err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error(_err)
+  res.status(500).json({ error: 'Internal server error' })
 })
 
 export default app
