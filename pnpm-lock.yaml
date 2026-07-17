@@ -23,6 +23,9 @@ importers:
 
   apps/backend:
     dependencies:
+      '@portfolio/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@prisma/client':
         specifier: ^5.0.0
         version: 5.22.0(prisma@5.22.0)
