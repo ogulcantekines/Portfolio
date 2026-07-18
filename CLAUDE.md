@@ -5,6 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Monorepo structure
 
 pnpm workspaces with three packages:
+
 - `apps/backend` — Express + TypeScript API (`@portfolio/backend`)
 - `apps/frontend` — Next.js 16 + React 19 + Tailwind 4 (`@portfolio/frontend`)
 - `packages/shared` — Zod schemas and TypeScript types shared between both apps (`@portfolio/shared`)
