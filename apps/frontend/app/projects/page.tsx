@@ -1,34 +1,28 @@
 import Link from 'next/link'
 import ScrollReveal from '../../components/ScrollReveal'
 
-const projects = [
-  {
-    id: '1',
-    title: 'Portfolio Website',
-    description:
-      'Full-stack portfolio site built with Next.js, Express, and PostgreSQL. Deployed on VPS with nginx. Pentested and hardened.',
-    techStack: ['Next.js', 'Express', 'PostgreSQL', 'Docker', 'Nginx'],
-    featured: true,
-  },
-  {
-    id: '2',
-    title: 'Network Scanner',
-    description:
-      'Custom network reconnaissance tool built in Python. Automates host discovery, port scanning, and service enumeration.',
-    techStack: ['Python', 'Nmap', 'Linux'],
-    featured: true,
-  },
-  {
-    id: '3',
-    title: 'CTF Writeups',
-    description:
-      'Documented solutions for HackTheBox and TryHackMe challenges covering web exploitation, privilege escalation, and more.',
-    techStack: ['HackTheBox', 'TryHackMe', 'Burp Suite'],
-    featured: false,
-  },
-]
+type Project = {
+  id: string
+  title: string
+  description: string
+  techStack: string[]
+  githubUrl: string | null
+  liveUrl: string | null
+  featured: boolean
+  order: number
+}
 
-export default function Projects() {
+async function getProjects(): Promise<Project[]> {
+  const res = await fetch(`${process.env.API_URL}/api/projects`, {
+    next: { revalidate: 60 },
+  })
+  if (!res.ok) return []
+  const json = await res.json()
+  return json.data ?? []
+}
+
+export default async function Projects() {
+  const projects = await getProjects()
   const featured = projects.filter((p) => p.featured)
   const rest = projects.filter((p) => !p.featured)
 
@@ -47,43 +41,49 @@ export default function Projects() {
         </ScrollReveal>
 
         {/* Featured */}
-        <ScrollReveal>
-          <div className="mb-8 flex items-center gap-4">
-            <span className="font-mono text-xs tracking-widest text-emerald-400">FEATURED</span>
-            <div className="h-px flex-1 bg-gradient-to-r from-zinc-800 to-transparent" />
-          </div>
-        </ScrollReveal>
-
-        <div className="mb-16 grid gap-4 sm:grid-cols-2">
-          {featured.map((project, i) => (
-            <ScrollReveal key={project.id} delay={i * 100}>
-              <Link
-                href={`/projects/${project.id}`}
-                className="card-glow group block border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
-              >
-                <div className="mb-2 flex items-start justify-between">
-                  <h2 className="text-xl font-semibold text-white transition-colors group-hover:text-emerald-400">
-                    {project.title}
-                  </h2>
-                  <span className="font-mono text-xs text-zinc-700 transition-colors group-hover:text-emerald-400">
-                    →
-                  </span>
-                </div>
-                <p className="mb-6 text-sm leading-relaxed text-zinc-500">{project.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  {project.techStack.map((tech) => (
-                    <span
-                      key={tech}
-                      className="border border-zinc-800 px-2 py-1 font-mono text-xs text-zinc-600"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </Link>
+        {featured.length > 0 && (
+          <>
+            <ScrollReveal>
+              <div className="mb-8 flex items-center gap-4">
+                <span className="font-mono text-xs tracking-widest text-emerald-400">FEATURED</span>
+                <div className="h-px flex-1 bg-gradient-to-r from-zinc-800 to-transparent" />
+              </div>
             </ScrollReveal>
-          ))}
-        </div>
+
+            <div className="mb-16 grid gap-4 sm:grid-cols-2">
+              {featured.map((project, i) => (
+                <ScrollReveal key={project.id} delay={i * 100}>
+                  <Link
+                    href={`/projects/${project.id}`}
+                    className="card-glow group block border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
+                  >
+                    <div className="mb-2 flex items-start justify-between">
+                      <h2 className="text-xl font-semibold text-white transition-colors group-hover:text-emerald-400">
+                        {project.title}
+                      </h2>
+                      <span className="font-mono text-xs text-zinc-700 transition-colors group-hover:text-emerald-400">
+                        →
+                      </span>
+                    </div>
+                    <p className="mb-6 text-sm leading-relaxed text-zinc-500">
+                      {project.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {project.techStack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="border border-zinc-800 px-2 py-1 font-mono text-xs text-zinc-600"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </Link>
+                </ScrollReveal>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Other */}
         {rest.length > 0 && (
@@ -128,6 +128,10 @@ export default function Projects() {
               ))}
             </div>
           </>
+        )}
+
+        {projects.length === 0 && (
+          <p className="font-mono text-sm text-zinc-600">No projects yet.</p>
         )}
       </div>
     </div>
