@@ -12,12 +12,16 @@ type Post = {
 }
 
 async function getPost(slug: string): Promise<Post | null> {
-  const res = await fetch(`${process.env.API_URL}/api/blog/${slug}`, {
-    next: { revalidate: 60 },
-  })
-  if (!res.ok) return null
-  const json = await res.json()
-  return json.data ?? null
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/blog/${slug}`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.data ?? null
+  } catch {
+    return null
+  }
 }
 
 export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {

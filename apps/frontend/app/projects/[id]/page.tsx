@@ -13,12 +13,16 @@ type Project = {
 }
 
 async function getProject(id: string): Promise<Project | null> {
-  const res = await fetch(`${process.env.API_URL}/api/projects/${id}`, {
-    next: { revalidate: 60 },
-  })
-  if (!res.ok) return null
-  const json = await res.json()
-  return json.data ?? null
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/projects/${id}`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.data ?? null
+  } catch {
+    return null
+  }
 }
 
 export default async function ProjectDetail({ params }: { params: Promise<{ id: string }> }) {

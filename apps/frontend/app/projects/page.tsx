@@ -13,12 +13,16 @@ type Project = {
 }
 
 async function getProjects(): Promise<Project[]> {
-  const res = await fetch(`${process.env.API_URL}/api/projects`, {
-    next: { revalidate: 60 },
-  })
-  if (!res.ok) return []
-  const json = await res.json()
-  return json.data ?? []
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/projects`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data ?? []
+  } catch {
+    return []
+  }
 }
 
 export default async function Projects() {
