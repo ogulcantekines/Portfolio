@@ -22,3 +22,30 @@ export const getBySlug = async (req: Request, res: Response, next: NextFunction)
     next(err)
   }
 }
+
+export const create = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const post = await blogService.createPost(req.body)
+    res.status(201).json({ data: post })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const update = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const post = await blogService.updatePost(req.params.slug, req.body)
+    res.json({ data: post })
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const remove = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await blogService.deletePost(req.params.slug)
+    res.status(204).send()
+  } catch (err) {
+    next(err)
+  }
+}
