@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import ScrollReveal from '../../components/ScrollReveal'
 
+// Rendered at request time so `next build` never depends on a running backend.
+export const dynamic = 'force-dynamic'
+
 type Post = {
   id: string
   title: string

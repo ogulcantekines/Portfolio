@@ -4,6 +4,9 @@ import TypingText from '../components/TypingText'
 import ScrollReveal from '../components/ScrollReveal'
 import ScrollDown from '../components/ScrollDown'
 
+// Rendered at request time so `next build` never depends on a running backend.
+export const dynamic = 'force-dynamic'
+
 const API = process.env.API_URL
 
 async function fetchProfile<T>(endpoint: string): Promise<T[]> {
