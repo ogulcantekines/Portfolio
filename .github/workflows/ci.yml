@@ -29,8 +29,14 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm --filter '@portfolio/backend' exec prisma generate
 
+      - name: Build shared package
+        run: pnpm --filter '@portfolio/shared' build
+
       - name: Lint
         run: pnpm lint
 
       - name: Type check
         run: pnpm --filter '@portfolio/backend' exec tsc --noEmit
+
+      - name: Build
+        run: pnpm build

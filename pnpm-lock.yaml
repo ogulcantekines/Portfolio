@@ -124,6 +124,10 @@ importers:
       zod:
         specifier: ^3.22.0
         version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
 
 packages:
 
