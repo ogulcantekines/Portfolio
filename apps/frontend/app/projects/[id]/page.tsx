@@ -2,74 +2,32 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ScrollReveal from '../../../components/ScrollReveal'
 
-const projects: Record<
-  string,
-  {
-    title: string
-    description: string
-    techStack: string[]
-    githubUrl?: string
-    liveUrl?: string
-    purpose: string
-    highlights: string[]
+type Project = {
+  id: string
+  title: string
+  description: string
+  techStack: string[]
+  githubUrl: string | null
+  liveUrl: string | null
+  featured: boolean
+}
+
+async function getProject(id: string): Promise<Project | null> {
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/projects/${id}`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return null
+    const json = await res.json()
+    return json.data ?? null
+  } catch {
+    return null
   }
-> = {
-  '1': {
-    title: 'Portfolio Website',
-    description:
-      'Full-stack portfolio site built with Next.js, Express, and PostgreSQL. Deployed on VPS with nginx. Pentested and hardened.',
-    techStack: [
-      'Next.js',
-      'TypeScript',
-      'Express',
-      'PostgreSQL',
-      'Prisma',
-      'Docker',
-      'Nginx',
-      'GitHub Actions',
-    ],
-    githubUrl: 'https://github.com/ogulcantekines/Portfolio',
-    purpose:
-      'Build a production-grade portfolio site end to end — from backend API design to VPS deployment — then pentest and harden it. The goal was to learn every layer of the stack by owning the full lifecycle.',
-    highlights: [
-      'REST API with Express, Prisma ORM, and PostgreSQL',
-      'Monorepo with pnpm workspaces (backend, frontend, shared)',
-      'CI/CD pipeline with GitHub Actions',
-      'Reverse proxy with nginx and TLS termination',
-      'Rate limiting, CORS, and security headers via Helmet',
-      'Pentested and hardened post-deployment',
-    ],
-  },
-  '2': {
-    title: 'Network Scanner',
-    description:
-      'Custom network reconnaissance tool built in Python. Automates host discovery, port scanning, and service enumeration.',
-    techStack: ['Python', 'Nmap', 'Linux'],
-    purpose:
-      'Automate the reconnaissance phase of a penetration test. Combines host discovery, port scanning, and service detection into a single workflow.',
-    highlights: [
-      'Host discovery across CIDR ranges',
-      'Port scanning with service and version detection',
-      'Output formatted as structured JSON for further processing',
-    ],
-  },
-  '3': {
-    title: 'CTF Writeups',
-    description: 'Documented solutions for HackTheBox and TryHackMe challenges.',
-    techStack: ['HackTheBox', 'TryHackMe', 'Burp Suite', 'Metasploit'],
-    purpose:
-      'Document the methodology and thought process behind CTF solutions — not just the flags, but the reasoning at each step.',
-    highlights: [
-      'Web exploitation — SQLi, XSS, IDOR, SSRF',
-      'Privilege escalation — Linux and Windows',
-      'Network-based challenges',
-    ],
-  },
 }
 
 export default async function ProjectDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const project = projects[id]
+  const project = await getProject(id)
 
   if (!project) notFound()
 
@@ -98,31 +56,7 @@ export default async function ProjectDetail({ params }: { params: Promise<{ id: 
           </div>
         </ScrollReveal>
 
-        <ScrollReveal delay={150}>
-          <div className="mb-10 border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm">
-            <p className="mb-3 font-mono text-xs tracking-widest text-emerald-400">PURPOSE</p>
-            <p className="leading-relaxed text-zinc-400">{project.purpose}</p>
-          </div>
-        </ScrollReveal>
-
         <ScrollReveal delay={200}>
-          <div className="mb-10">
-            <p className="mb-6 font-mono text-xs tracking-widest text-emerald-400">HIGHLIGHTS</p>
-            <ul className="space-y-3">
-              {project.highlights.map((item, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-3 border border-zinc-800/40 bg-zinc-900/10 px-4 py-3 text-zinc-400"
-                >
-                  <span className="mt-2 h-px w-4 shrink-0 bg-emerald-400/50" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </ScrollReveal>
-
-        <ScrollReveal delay={250}>
           <div className="mb-10">
             <p className="mb-4 font-mono text-xs tracking-widest text-emerald-400">STACK</p>
             <div className="flex flex-wrap gap-2">

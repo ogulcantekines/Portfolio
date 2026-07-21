@@ -1,28 +1,30 @@
 import Link from 'next/link'
 import ScrollReveal from '../../components/ScrollReveal'
 
-const posts = [
-  {
-    slug: 'pentesting-my-own-portfolio',
-    title: 'Pentesting My Own Portfolio Site',
-    excerpt:
-      'What happens when you build a web app and then try to break it yourself? A walkthrough of the methodology, findings, and fixes.',
-    publishedAt: '2026-08-01',
-    tags: ['pentest', 'web-security', 'writeup'],
-    readTime: '8 min',
-  },
-  {
-    slug: 'backend-api-security',
-    title: 'Securing a Node.js REST API: Rate Limiting, CORS, and Headers',
-    excerpt:
-      "A practical look at the security controls added to this portfolio's Express backend — and why each one matters.",
-    publishedAt: '2026-07-20',
-    tags: ['nodejs', 'security', 'api'],
-    readTime: '6 min',
-  },
-]
+type Post = {
+  id: string
+  title: string
+  slug: string
+  excerpt: string
+  publishedAt: string | null
+}
 
-export default function Blog() {
+async function getPosts(): Promise<Post[]> {
+  try {
+    const res = await fetch(`${process.env.API_URL}/api/blog`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data ?? []
+  } catch {
+    return []
+  }
+}
+
+export default async function Blog() {
+  const posts = await getPosts()
+
   return (
     <div className="bg-grid relative min-h-screen">
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
@@ -44,17 +46,12 @@ export default function Blog() {
                 href={`/blog/${post.slug}`}
                 className="card-glow group block border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
               >
-                <div className="mb-4 flex flex-wrap items-center gap-4">
-                  <time className="font-mono text-xs text-zinc-600">{post.publishedAt}</time>
-                  <span className="font-mono text-xs text-zinc-700">·</span>
-                  <span className="font-mono text-xs text-zinc-600">{post.readTime} read</span>
-                  <div className="flex gap-3">
-                    {post.tags.map((tag) => (
-                      <span key={tag} className="font-mono text-xs text-emerald-400/50">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
+                <div className="mb-4">
+                  {post.publishedAt && (
+                    <time className="font-mono text-xs text-zinc-600">
+                      {new Date(post.publishedAt).toISOString().slice(0, 10)}
+                    </time>
+                  )}
                 </div>
 
                 <div className="flex items-start justify-between gap-4">
@@ -71,6 +68,8 @@ export default function Blog() {
               </Link>
             </ScrollReveal>
           ))}
+
+          {posts.length === 0 && <p className="font-mono text-sm text-zinc-600">No posts yet.</p>}
         </div>
       </div>
     </div>

@@ -4,79 +4,38 @@ import TypingText from '../components/TypingText'
 import ScrollReveal from '../components/ScrollReveal'
 import ScrollDown from '../components/ScrollDown'
 
-const skills = [
-  {
-    category: 'Security',
-    icon: '⚔',
-    items: [
-      'Penetration Testing',
-      'Network Security',
-      'Burp Suite',
-      'Nmap',
-      'Metasploit',
-      'Wireshark',
-    ],
-  },
-  {
-    category: 'Backend',
-    icon: '⚙',
-    items: ['Node.js', 'Express', 'PostgreSQL', 'Prisma', 'REST API', 'Docker'],
-  },
-  {
-    category: 'Frontend',
-    icon: '◈',
-    items: ['Next.js', 'React', 'TypeScript', 'Tailwind CSS'],
-  },
-  {
-    category: 'DevOps',
-    icon: '⬡',
-    items: ['Linux', 'Nginx', 'CI/CD', 'GitHub Actions', 'VPS'],
-  },
-]
+const API = process.env.API_URL
 
-const stats = [
-  { value: '1+', label: 'Years Learning' },
-  { value: '3+', label: 'Projects Built' },
-  { value: '10+', label: 'CTF Challenges' },
-  { value: '∞', label: 'Curiosity' },
-]
+async function fetchProfile<T>(endpoint: string): Promise<T[]> {
+  try {
+    const res = await fetch(`${API}/api/profile/${endpoint}`, { next: { revalidate: 60 } })
+    if (!res.ok) return []
+    const json = await res.json()
+    return json.data ?? []
+  } catch {
+    return []
+  }
+}
 
-const experience = [
-  {
-    year: '2026',
-    title: 'Full-Stack Developer',
-    place: 'Personal Projects',
-    description:
-      'Built production-grade web applications end to end — backend API, frontend, deployment, and security testing.',
-  },
-  {
-    year: '2025',
-    title: 'Security Research',
-    place: 'Self-Directed',
-    description:
-      'Focused on offensive security — CTF challenges on HackTheBox and TryHackMe, network security, and penetration testing methodology.',
-  },
-  {
-    year: '2025',
-    title: 'Computer Engineering Graduate',
-    place: 'University',
-    description: 'Completed degree with focus on networking and software development.',
-  },
-]
+type Skill = { id: string; name: string; icon: string; items: string[] }
+type Stat = { id: string; value: string; label: string }
+type Experience = { id: string; year: string; title: string; place: string; description: string }
+type Certification = { id: string; name: string; issuer: string; status: string; year: string }
+type Social = { id: string; label: string; href: string; icon: string }
+type About = { id: string; slug: string; content: string }
 
-const certifications = [
-  { name: 'eJPT', issuer: 'eLearnSecurity', status: 'Planned', year: '2026' },
-  { name: 'CompTIA Security+', issuer: 'CompTIA', status: 'Planned', year: '2026' },
-  { name: 'OSCP', issuer: 'Offensive Security', status: 'Goal', year: '2027' },
-]
+export default async function Home() {
+  const [skills, stats, experience, certifications, socials, about] = await Promise.all([
+    fetchProfile<Skill>('skills'),
+    fetchProfile<Stat>('stats'),
+    fetchProfile<Experience>('experience'),
+    fetchProfile<Certification>('certifications'),
+    fetchProfile<Social>('socials'),
+    fetchProfile<About>('about'),
+  ])
 
-const socials = [
-  { label: 'GitHub', href: 'https://github.com/ogulcantekines', icon: 'GH' },
-  { label: 'HackTheBox', href: 'https://hackthebox.com', icon: 'HTB' },
-  { label: 'TryHackMe', href: 'https://tryhackme.com', icon: 'THM' },
-]
-
-export default function Home() {
+  const bgAbout = about.find((a) => a.slug === 'background')
+  const approachAbout = about.find((a) => a.slug === 'approach')
   return (
     <div className="bg-grid noise relative min-h-screen">
       <ParticlesBg />
@@ -172,21 +131,13 @@ export default function Home() {
             <ScrollReveal delay={100}>
               <div className="card-glow h-full border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm">
                 <p className="mb-4 font-mono text-xs text-emerald-400">{'// background'}</p>
-                <p className="leading-relaxed text-zinc-400">
-                  Recent graduate passionate about cybersecurity and software development. My goal
-                  is to specialize in offensive security — understanding systems deeply enough to
-                  find and exploit vulnerabilities, then helping organizations fix them.
-                </p>
+                <p className="leading-relaxed text-zinc-400">{bgAbout?.content}</p>
               </div>
             </ScrollReveal>
             <ScrollReveal delay={200}>
               <div className="card-glow h-full border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm">
                 <p className="mb-4 font-mono text-xs text-emerald-400">{'// approach'}</p>
-                <p className="leading-relaxed text-zinc-400">
-                  I build full-stack web applications with modern tooling, deploy them to VPS
-                  servers, and then pentest my own work. This portfolio site is itself a live
-                  example — built, deployed, and security-tested end to end.
-                </p>
+                <p className="leading-relaxed text-zinc-400">{approachAbout?.content}</p>
               </div>
             </ScrollReveal>
           </div>
@@ -203,11 +154,11 @@ export default function Home() {
           </ScrollReveal>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {skills.map(({ category, icon, items }, i) => (
-              <ScrollReveal key={category} delay={i * 100}>
+            {skills.map(({ name, icon, items }, i) => (
+              <ScrollReveal key={name} delay={i * 100}>
                 <div className="card-glow group border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm">
                   <div className="mb-5 flex items-center justify-between">
-                    <p className="font-mono text-xs tracking-widest text-emerald-400">{category}</p>
+                    <p className="font-mono text-xs tracking-widest text-emerald-400">{name}</p>
                     <span className="text-xl text-zinc-700 transition-colors group-hover:text-emerald-400/60">
                       {icon}
                     </span>

@@ -41,3 +41,50 @@ model ContactMessage {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model SkillCategory {
+  id    String   @id @default(cuid())
+  name  String
+  icon  String
+  items String[]
+  order Int      @default(0)
+}
+
+model Stat {
+  id    String @id @default(cuid())
+  value String
+  label String
+  order Int    @default(0)
+}
+
+model Experience {
+  id          String @id @default(cuid())
+  year        String
+  title       String
+  place       String
+  description String
+  order       Int    @default(0)
+}
+
+model Certification {
+  id     String @id @default(cuid())
+  name   String
+  issuer String
+  status String
+  year   String
+  order  Int    @default(0)
+}
+
+model Social {
+  id    String @id @default(cuid())
+  label String
+  href  String
+  icon  String
+  order Int    @default(0)
+}
+
+model About {
+  id      String @id @default(cuid())
+  slug    String @unique
+  content String
+}
