@@ -14,9 +14,29 @@ export const getAllPosts = async () => {
   })
 }
 
+export const getAllPostsAdmin = async () => {
+  return prisma.blogPost.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      excerpt: true,
+      published: true,
+      publishedAt: true,
+    },
+  })
+}
+
 export const getPostBySlug = async (slug: string) => {
   return prisma.blogPost.findUnique({
     where: { slug, published: true },
+  })
+}
+
+export const getPostBySlugAdmin = async (slug: string) => {
+  return prisma.blogPost.findUnique({
+    where: { slug },
   })
 }
 

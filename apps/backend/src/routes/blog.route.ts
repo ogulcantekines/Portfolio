@@ -5,6 +5,8 @@ import { requireAuth } from '../middleware/auth'
 const router: IRouter = Router()
 
 router.get('/', blogController.getAll)
+router.get('/admin/all', requireAuth, blogController.getAllAdmin)
+router.get('/admin/:slug', requireAuth, blogController.getBySlugAdmin)
 router.get('/:slug', blogController.getBySlug)
 
 router.post('/', requireAuth, blogController.create)
