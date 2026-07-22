@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import * as projectService from '../services/project.service'
+import { projectSchema } from '@portfolio/shared'
 
 export const getAll = async (_req: Request, res: Response, next: NextFunction) => {
   try {
@@ -34,7 +35,12 @@ export const getById = async (req: Request, res: Response, next: NextFunction) =
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const project = await projectService.createProject(req.body)
+    const result = projectSchema.safeParse(req.body)
+    if (!result.success) {
+      res.status(400).json({ error: result.error.flatten().fieldErrors })
+      return
+    }
+    const project = await projectService.createProject(result.data)
     res.status(201).json({ data: project })
   } catch (err) {
     next(err)
@@ -43,7 +49,12 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 
 export const update = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const project = await projectService.updateProject(req.params.id, req.body)
+    const result = projectSchema.partial().safeParse(req.body)
+    if (!result.success) {
+      res.status(400).json({ error: result.error.flatten().fieldErrors })
+      return
+    }
+    const project = await projectService.updateProject(req.params.id, result.data)
     res.json({ data: project })
   } catch (err) {
     next(err)
