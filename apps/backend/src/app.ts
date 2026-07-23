@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit'
 import { ZodError } from 'zod'
 import { router } from './routes'
 import { Prisma } from '@prisma/client'
+import { prisma } from './lib/prisma'
 
 const app: Express = express()
 
@@ -20,8 +21,13 @@ app.use(
 
 app.use('/api', router)
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' })
+app.get('/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    res.json({ status: 'ok', db: 'up' })
+  } catch {
+    res.status(503).json({ status: 'error', db: 'down' })
+  }
 })
 
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
