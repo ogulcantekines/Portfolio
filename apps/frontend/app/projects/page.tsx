@@ -62,7 +62,7 @@ export default async function Projects() {
                 <ScrollReveal key={project.id} delay={i * 100}>
                   <Link
                     href={`/projects/${project.id}`}
-                    className="card-glow group block border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
+                    className="card-glow group block h-full border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
                   >
                     <div className="mb-2 flex items-start justify-between">
                       <h2 className="text-xl font-semibold text-white transition-colors group-hover:text-emerald-400">

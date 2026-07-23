@@ -4,6 +4,8 @@ import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import BackToTop from '../components/BackToTop'
+import CursorGlow from '../components/CursorGlow'
+import ScrollProgress from '../components/ScrollProgress'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -46,6 +48,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-black text-white">
+        <ScrollProgress />
+        <CursorGlow />
         <Navbar />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />
