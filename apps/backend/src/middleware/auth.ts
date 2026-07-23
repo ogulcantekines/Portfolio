@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { env } from '../lib/env'
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   const header = req.headers.authorization
@@ -10,7 +11,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
 
   const token = header.slice(7)
   try {
-    jwt.verify(token, process.env.JWT_SECRET!)
+    jwt.verify(token, env.JWT_SECRET)
     next()
   } catch {
     res.status(401).json({ error: 'Invalid token' })

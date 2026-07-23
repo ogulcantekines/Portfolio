@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { blogSchema } from '@portfolio/shared'
 import * as blogService from '../services/blog.service'
 
 export const getAll = async (_req: Request, res: Response, next: NextFunction) => {
@@ -47,7 +48,12 @@ export const getBySlugAdmin = async (req: Request, res: Response, next: NextFunc
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const post = await blogService.createPost(req.body)
+    const result = blogSchema.safeParse(req.body)
+    if (!result.success) {
+      res.status(400).json({ error: result.error.flatten().fieldErrors })
+      return
+    }
+    const post = await blogService.createPost(result.data)
     res.status(201).json({ data: post })
   } catch (err) {
     next(err)
@@ -56,7 +62,12 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 
 export const update = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const post = await blogService.updatePost(req.params.slug, req.body)
+    const result = blogSchema.partial().safeParse(req.body)
+    if (!result.success) {
+      res.status(400).json({ error: result.error.flatten().fieldErrors })
+      return
+    }
+    const post = await blogService.updatePost(req.params.slug, result.data)
     res.json({ data: post })
   } catch (err) {
     next(err)
