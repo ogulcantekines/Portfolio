@@ -19,7 +19,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
-  title: 'Oğulcan Tekineş — Offensive Security & Full-Stack Developer',
+  title: {
+    default: 'Oğulcan Tekineş — Offensive Security & Full-Stack Developer',
+    template: '%s | Oğulcan Tekineş',
+  },
   description:
     'Offensive Security researcher and Full-Stack Developer. I build secure systems and break insecure ones.',
   openGraph: {

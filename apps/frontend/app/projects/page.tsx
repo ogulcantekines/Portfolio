@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import ScrollReveal from '../../components/ScrollReveal'
+
+export const metadata: Metadata = {
+  title: 'Projects',
+  description: 'Security tooling, full-stack apps, and CTF work by Oğulcan Tekineş.',
+}
 
 // Rendered at request time so `next build` never depends on a running backend.
 export const dynamic = 'force-dynamic'
