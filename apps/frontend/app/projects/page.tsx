@@ -23,7 +23,7 @@ type Project = {
 
 async function getProjects(): Promise<Project[]> {
   try {
-    const res = await fetch(`${process.env.API_URL}/api/projects`, {
+    const res = await fetch(`${process.env.API_URL}/api/projects?limit=100`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []

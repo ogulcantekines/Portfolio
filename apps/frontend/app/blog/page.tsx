@@ -20,7 +20,7 @@ type Post = {
 
 async function getPosts(): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.API_URL}/api/blog`, {
+    const res = await fetch(`${process.env.API_URL}/api/blog?limit=100`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []

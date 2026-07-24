@@ -1,17 +1,24 @@
 import { prisma } from '../lib/prisma'
 
-export const getAllPosts = async () => {
-  return prisma.blogPost.findMany({
-    where: { published: true },
-    orderBy: { publishedAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      publishedAt: true,
-    },
-  })
+export const getAllPosts = async ({ skip, take }: { skip: number; take: number }) => {
+  const where = { published: true }
+  const [data, total] = await prisma.$transaction([
+    prisma.blogPost.findMany({
+      where,
+      orderBy: { publishedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
+      },
+      skip,
+      take,
+    }),
+    prisma.blogPost.count({ where }),
+  ])
+  return { data, total }
 }
 
 export const getAllPostsAdmin = async () => {
