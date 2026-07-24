@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import ScrollReveal from '../../../components/ScrollReveal'
@@ -22,6 +23,21 @@ async function getProject(id: string): Promise<Project | null> {
     return json.data ?? null
   } catch {
     return null
+  }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
+  const { id } = await params
+  const project = await getProject(id)
+  if (!project) return { title: 'Project not found' }
+  return {
+    title: project.title,
+    description: project.description,
+    openGraph: { title: project.title, description: project.description },
   }
 }
 

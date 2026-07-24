@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
 import { blogSchema } from '@portfolio/shared'
 import * as blogService from '../services/blog.service'
+import { getPagination, paginated } from '../lib/pagination'
 
-export const getAll = async (_req: Request, res: Response, next: NextFunction) => {
+export const getAll = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const posts = await blogService.getAllPosts()
-    res.json({ data: posts })
+    const { page, limit, skip } = getPagination(req.query)
+    const { data, total } = await blogService.getAllPosts({ skip, take: limit })
+    res.json(paginated(data, total, page, limit))
   } catch (err) {
     next(err)
   }

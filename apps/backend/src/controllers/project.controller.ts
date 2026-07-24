@@ -1,11 +1,13 @@
 import { NextFunction, Request, Response } from 'express'
 import * as projectService from '../services/project.service'
 import { projectSchema } from '@portfolio/shared'
+import { getPagination, paginated } from '../lib/pagination'
 
-export const getAll = async (_req: Request, res: Response, next: NextFunction) => {
+export const getAll = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const projects = await projectService.getAllProjects()
-    res.json({ data: projects })
+    const { page, limit, skip } = getPagination(req.query)
+    const { data, total } = await projectService.getAllProjects({ skip, take: limit })
+    res.json(paginated(data, total, page, limit))
   } catch (err) {
     next(err)
   }

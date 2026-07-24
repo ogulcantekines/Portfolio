@@ -1,5 +1,11 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import ScrollReveal from '../../components/ScrollReveal'
+
+export const metadata: Metadata = {
+  title: 'Projects',
+  description: 'Security tooling, full-stack apps, and CTF work by Oğulcan Tekineş.',
+}
 
 // Rendered at request time so `next build` never depends on a running backend.
 export const dynamic = 'force-dynamic'
@@ -17,7 +23,7 @@ type Project = {
 
 async function getProjects(): Promise<Project[]> {
   try {
-    const res = await fetch(`${process.env.API_URL}/api/projects`, {
+    const res = await fetch(`${process.env.API_URL}/api/projects?limit=100`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
@@ -62,7 +68,7 @@ export default async function Projects() {
                 <ScrollReveal key={project.id} delay={i * 100}>
                   <Link
                     href={`/projects/${project.id}`}
-                    className="card-glow group block border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
+                    className="card-glow group block h-full border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
                   >
                     <div className="mb-2 flex items-start justify-between">
                       <h2 className="text-xl font-semibold text-white transition-colors group-hover:text-emerald-400">

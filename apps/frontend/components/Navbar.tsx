@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const links = [
   { href: '/', label: 'Home' },
@@ -14,32 +14,57 @@ const links = [
 export default function Navbar() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 border-b border-white/5 bg-black/80 backdrop-blur-md">
+    <header
+      className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
+        scrolled || open
+          ? 'border-b border-emerald-500/10 bg-black/80 shadow-[0_4px_30px_rgba(0,0,0,0.5)] backdrop-blur-md'
+          : 'border-b border-transparent bg-transparent'
+      }`}
+    >
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <Link
           href="/"
-          className="font-mono text-sm font-semibold tracking-widest text-emerald-400"
+          className="group font-mono text-sm font-semibold tracking-widest text-emerald-400 transition-transform hover:scale-105"
           onClick={() => setOpen(false)}
         >
-          OT<span className="text-white">_</span>
+          OT
+          <span className="cursor-blink text-white transition-colors group-hover:text-emerald-400">
+            _
+          </span>
         </Link>
 
         {/* Desktop links */}
         <ul className="hidden items-center gap-8 sm:flex">
-          {links.map(({ href, label }) => (
-            <li key={href}>
-              <Link
-                href={href}
-                className={`font-mono text-xs tracking-widest transition-colors ${
-                  pathname === href ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
-                }`}
-              >
-                {label}
-              </Link>
-            </li>
-          ))}
+          {links.map(({ href, label }) => {
+            const active = pathname === href
+            return (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className={`group relative font-mono text-xs tracking-widest transition-colors ${
+                    active ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {label}
+                  <span
+                    className={`absolute -bottom-1.5 left-0 h-px bg-emerald-400 transition-all duration-300 ${
+                      active ? 'w-full' : 'w-0 group-hover:w-full'
+                    }`}
+                  />
+                </Link>
+              </li>
+            )
+          })}
         </ul>
 
         {/* Mobile hamburger */}

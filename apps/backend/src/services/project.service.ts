@@ -1,9 +1,11 @@
 import { prisma } from '../lib/prisma'
 
-export const getAllProjects = async () => {
-  return prisma.project.findMany({
-    orderBy: { order: 'asc' },
-  })
+export const getAllProjects = async ({ skip, take }: { skip: number; take: number }) => {
+  const [data, total] = await prisma.$transaction([
+    prisma.project.findMany({ orderBy: { order: 'asc' }, skip, take }),
+    prisma.project.count(),
+  ])
+  return { data, total }
 }
 
 export const getFeaturedProjects = async () => {

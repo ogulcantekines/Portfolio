@@ -13,6 +13,7 @@ const envSchema = z.object({
       'JWT_SECRET has too little variety — generate a random one'
     ),
   ADMIN_PASSWORD: z.string().min(8, 'ADMIN_PASSWORD must be at least 8 characters'),
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug']).default('info'),
 })
 
 const parsed = envSchema.safeParse(process.env)

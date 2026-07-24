@@ -4,6 +4,8 @@ import './globals.css'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import BackToTop from '../components/BackToTop'
+import CursorGlow from '../components/CursorGlow'
+import ScrollProgress from '../components/ScrollProgress'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -16,7 +18,11 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Oğulcan Tekineş — Offensive Security & Full-Stack Developer',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  title: {
+    default: 'Oğulcan Tekineş — Offensive Security & Full-Stack Developer',
+    template: '%s | Oğulcan Tekineş',
+  },
   description:
     'Offensive Security researcher and Full-Stack Developer. I build secure systems and break insecure ones.',
   openGraph: {
@@ -45,6 +51,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-black text-white">
+        <ScrollProgress />
+        <CursorGlow />
         <Navbar />
         <main className="flex-1 pt-16">{children}</main>
         <Footer />

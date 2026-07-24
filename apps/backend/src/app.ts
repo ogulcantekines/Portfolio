@@ -5,8 +5,13 @@ import rateLimit from 'express-rate-limit'
 import { ZodError } from 'zod'
 import { router } from './routes'
 import { Prisma } from '@prisma/client'
+import { prisma } from './lib/prisma'
+import pinoHttp from 'pino-http'
+import { logger } from './lib/logger'
 
 const app: Express = express()
+
+app.use(pinoHttp({ logger }))
 
 app.use(helmet())
 app.use(cors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:3000' }))
@@ -20,11 +25,16 @@ app.use(
 
 app.use('/api', router)
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok' })
+app.get('/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`
+    res.json({ status: 'ok', db: 'up' })
+  } catch {
+    res.status(503).json({ status: 'error', db: 'down' })
+  }
 })
 
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof ZodError) {
     res.status(400).json({ error: err.flatten().fieldErrors })
     return
@@ -39,7 +49,7 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
       return
     }
   }
-  console.error(err)
+  req.log.error({ err }, 'Unhandled error')
   res.status(500).json({ error: 'Internal server error' })
 })
 

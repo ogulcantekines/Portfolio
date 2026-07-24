@@ -67,10 +67,16 @@ export default async function Home() {
           </div>
 
           {/* Name */}
-          <div className="animate-fade-up-2 mb-6 select-none">
-            <h1 className="text-7xl font-bold tracking-tight text-white sm:text-9xl">Oğulcan</h1>
+          <div className="animate-fade-up-2 relative mb-6 select-none">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-0 h-52 w-[70%] -translate-y-1/2 rounded-full bg-emerald-500/10 blur-[90px]"
+            />
+            <h1 className="relative text-7xl font-bold tracking-tight text-white sm:text-9xl">
+              Oğulcan
+            </h1>
             <h1
-              className="shimmer text-7xl font-bold tracking-tight sm:text-9xl"
+              className="shimmer relative text-7xl font-bold tracking-tight sm:text-9xl"
               data-text="Tekineş"
             >
               Tekineş
@@ -159,7 +165,7 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {skills.map(({ name, icon, items }, i) => (
               <ScrollReveal key={name} delay={i * 100}>
-                <div className="card-glow group border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm">
+                <div className="card-glow group h-full border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm">
                   <div className="mb-5 flex items-center justify-between">
                     <p className="font-mono text-xs tracking-widest text-emerald-400">{name}</p>
                     <span className="text-xl text-zinc-700 transition-colors group-hover:text-emerald-400/60">
@@ -188,7 +194,7 @@ export default async function Home() {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {stats.map(({ value, label }, i) => (
               <ScrollReveal key={label} delay={i * 80}>
-                <div className="card-glow border border-zinc-800/60 bg-zinc-900/20 p-6 text-center backdrop-blur-sm">
+                <div className="card-glow h-full border border-zinc-800/60 bg-zinc-900/20 p-6 text-center backdrop-blur-sm">
                   <p className="mb-2 text-4xl font-bold text-emerald-400">{value}</p>
                   <p className="font-mono text-xs tracking-widest text-zinc-600">{label}</p>
                 </div>
@@ -244,7 +250,7 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-3">
             {certifications.map(({ name, issuer, status, year }, i) => (
               <ScrollReveal key={name} delay={i * 100}>
-                <div className="card-glow border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm">
+                <div className="card-glow h-full border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm">
                   <div className="mb-4 flex items-start justify-between">
                     <h3 className="text-lg font-bold text-white">{name}</h3>
                     <span
