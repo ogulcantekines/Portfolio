@@ -40,3 +40,59 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: portfolio_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter '@portfolio/backend' exec prisma generate
+
+      - name: Build shared package
+        run: pnpm --filter '@portfolio/shared' build
+
+      - name: Create test env file
+        run: |
+          cat > apps/backend/.env.test <<'EOF'
+          NODE_ENV=test
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/portfolio_test
+          JWT_SECRET=ci-test-secret-value-with-enough-variety-1234567890
+          ADMIN_PASSWORD=ci-test-admin-password
+          LOG_LEVEL=fatal
+          EOF
+
+      - name: Apply schema to test database
+        run: pnpm --filter '@portfolio/backend' exec dotenv -e .env.test -- prisma db push
+
+      - name: Run tests
+        run: pnpm --filter '@portfolio/backend' test
