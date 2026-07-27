@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { Toaster } from '@/components/Toaster'
 
 const CONTENT_NAV = [
   { label: 'Projects', href: '/admin/projects' },
@@ -86,6 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <main className="flex-1 overflow-auto p-10">{children}</main>
+      <Toaster />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Message {
   id: string
@@ -11,43 +12,41 @@ interface Message {
   createdAt: string
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
-
 export default function AdminMessages() {
   const [messages, setMessages] = useState<Message[]>([])
 
   useEffect(() => {
-    fetch(`${API}/api/contact`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then((r) => r.json())
+    adminFetch<{ data: Message[] }>('/api/contact')
       .then((json) => setMessages(json.data ?? []))
+      .catch(() => {})
   }, [])
 
   const load = async () => {
-    const res = await fetch(`${API}/api/contact`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    const json = await res.json()
-    setMessages(json.data ?? [])
+    try {
+      const json = await adminFetch<{ data: Message[] }>('/api/contact')
+      setMessages(json.data ?? [])
+    } catch {
+      // 401 redirects to login
+    }
   }
 
   const markRead = async (id: string) => {
-    await fetch(`${API}/api/contact/${id}/read`, {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
+    try {
+      await adminFetch(`/api/contact/${id}/read`, { method: 'PATCH' })
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)))
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this message?')) return
-    await fetch(`${API}/api/contact/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/contact/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   const unread = messages.filter((m) => !m.read).length

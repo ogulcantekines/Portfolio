@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Project {
   id: string
@@ -15,10 +16,6 @@ interface Project {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-
-function getToken() {
-  return localStorage.getItem('admin_token')
-}
 
 const emptyForm = {
   title: '',
@@ -81,44 +78,39 @@ export default function AdminProjects() {
     e.preventDefault()
     setLoading(true)
 
-    const body = {
-      title: form.title,
-      description: form.description,
-      techStack: form.techStack
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean),
-      githubUrl: form.githubUrl || null,
-      liveUrl: form.liveUrl || null,
-      imageUrl: form.imageUrl || null,
-      featured: form.featured,
-      order: Number(form.order),
+    try {
+      const body = {
+        title: form.title,
+        description: form.description,
+        techStack: form.techStack
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        githubUrl: form.githubUrl || null,
+        liveUrl: form.liveUrl || null,
+        imageUrl: form.imageUrl || null,
+        featured: form.featured,
+        order: Number(form.order),
+      }
+      const path = editId ? `/api/projects/${editId}` : '/api/projects'
+      await adminFetch(path, { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
     }
-
-    const url = editId ? `${API}/api/projects/${editId}` : `${API}/api/projects`
-    const method = editId ? 'PUT' : 'POST'
-
-    await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify(body),
-    })
-
-    await load()
-    cancel()
-    setLoading(false)
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this project?')) return
-    await fetch(`${API}/api/projects/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/projects/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (

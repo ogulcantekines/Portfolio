@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Experience {
   id: string
@@ -12,7 +13,6 @@ interface Experience {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
 const empty = { year: '', title: '', place: '', description: '', order: 0 }
 
 export default function AdminExperience() {
@@ -59,25 +59,27 @@ export default function AdminExperience() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const body = { ...form, order: Number(form.order) }
-    const url = editId ? `${API}/api/profile/experience/${editId}` : `${API}/api/profile/experience`
-    await fetch(url, {
-      method: editId ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify(body),
-    })
-    await load()
-    cancel()
-    setLoading(false)
+    try {
+      const body = { ...form, order: Number(form.order) }
+      const path = editId ? `/api/profile/experience/${editId}` : '/api/profile/experience'
+      await adminFetch(path, { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
+    }
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this entry?')) return
-    await fetch(`${API}/api/profile/experience/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/profile/experience/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (
