@@ -12,9 +12,9 @@ export const projectSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
   techStack: z.array(z.string().min(1).max(50)).max(30),
-  githubUrl: z.string().url().optional(),
-  liveUrl: z.string().url().optional(),
-  imageUrl: z.string().url().optional(),
+  githubUrl: z.string().url().nullish(),
+  liveUrl: z.string().url().nullish(),
+  imageUrl: z.string().url().nullish(),
   featured: z.boolean().optional(),
   order: z.number().int().min(0).optional(),
 })

@@ -25,9 +25,9 @@ export const createProject = async (data: {
   title: string
   description: string
   techStack: string[]
-  githubUrl?: string
-  liveUrl?: string
-  imageUrl?: string
+  githubUrl?: string | null
+  liveUrl?: string | null
+  imageUrl?: string | null
   featured?: boolean
   order?: number
 }) => {
