@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Certification {
   id: string
@@ -12,7 +13,6 @@ interface Certification {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
 const empty = { name: '', issuer: '', status: 'Completed', year: '', order: 0 }
 
 export default function AdminCertifications() {
@@ -53,27 +53,27 @@ export default function AdminCertifications() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const body = { ...form, order: Number(form.order) }
-    const url = editId
-      ? `${API}/api/profile/certifications/${editId}`
-      : `${API}/api/profile/certifications`
-    await fetch(url, {
-      method: editId ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify(body),
-    })
-    await load()
-    cancel()
-    setLoading(false)
+    try {
+      const body = { ...form, order: Number(form.order) }
+      const path = editId ? `/api/profile/certifications/${editId}` : '/api/profile/certifications'
+      await adminFetch(path, { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
+    }
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this certification?')) return
-    await fetch(`${API}/api/profile/certifications/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/profile/certifications/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (

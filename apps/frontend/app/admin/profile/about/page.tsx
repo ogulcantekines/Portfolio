@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface About {
   id: string
@@ -9,7 +10,6 @@ interface About {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
 
 export default function AdminAbout() {
   const [about, setAbout] = useState<About[]>([])
@@ -32,12 +32,16 @@ export default function AdminAbout() {
 
   const save = async (slug: string) => {
     setSaving(slug)
-    await fetch(`${API}/api/profile/about/${slug}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ content: values[slug] }),
-    })
-    setSaving(null)
+    try {
+      await adminFetch(`/api/profile/about/${slug}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content: values[slug] }),
+      })
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setSaving(null)
+    }
   }
 
   const LABELS: Record<string, string> = {

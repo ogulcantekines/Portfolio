@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Stat {
   id: string
@@ -10,7 +11,6 @@ interface Stat {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
 const empty = { value: '', label: '', order: 0 }
 
 export default function AdminStats() {
@@ -51,25 +51,27 @@ export default function AdminStats() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const body = { value: form.value, label: form.label, order: Number(form.order) }
-    const url = editId ? `${API}/api/profile/stats/${editId}` : `${API}/api/profile/stats`
-    await fetch(url, {
-      method: editId ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify(body),
-    })
-    await load()
-    cancel()
-    setLoading(false)
+    try {
+      const body = { value: form.value, label: form.label, order: Number(form.order) }
+      const path = editId ? `/api/profile/stats/${editId}` : '/api/profile/stats'
+      await adminFetch(path, { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
+    }
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this stat?')) return
-    await fetch(`${API}/api/profile/stats/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/profile/stats/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Skill {
   id: string
@@ -11,7 +12,6 @@ interface Skill {
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL
-const getToken = () => localStorage.getItem('admin_token')
 
 const empty = { name: '', icon: '', items: '', order: 0 }
 
@@ -55,33 +55,35 @@ export default function AdminSkills() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const body = {
-      name: form.name,
-      icon: form.icon,
-      items: form.items
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean),
-      order: Number(form.order),
+    try {
+      const body = {
+        name: form.name,
+        icon: form.icon,
+        items: form.items
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        order: Number(form.order),
+      }
+      const path = editId ? `/api/profile/skills/${editId}` : '/api/profile/skills'
+      await adminFetch(path, { method: editId ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
     }
-    const url = editId ? `${API}/api/profile/skills/${editId}` : `${API}/api/profile/skills`
-    await fetch(url, {
-      method: editId ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify(body),
-    })
-    await load()
-    cancel()
-    setLoading(false)
   }
 
   const remove = async (id: string) => {
     if (!confirm('Delete this skill category?')) return
-    await fetch(`${API}/api/profile/skills/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/profile/skills/${id}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (

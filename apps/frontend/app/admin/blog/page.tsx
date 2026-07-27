@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { adminFetch } from '@/lib/adminApi'
 
 interface Post {
   id: string
@@ -9,12 +10,6 @@ interface Post {
   excerpt: string
   published: boolean
   publishedAt: string | null
-}
-
-const API = process.env.NEXT_PUBLIC_API_URL
-
-function getToken() {
-  return localStorage.getItem('admin_token')
 }
 
 const emptyForm = {
@@ -42,19 +37,18 @@ export default function AdminBlog() {
   const [wasPublished, setWasPublished] = useState(false)
 
   const load = async () => {
-    const res = await fetch(`${API}/api/blog/admin/all`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    const json = await res.json()
-    setPosts(json.data ?? [])
+    try {
+      const json = await adminFetch<{ data: Post[] }>('/api/blog/admin/all')
+      setPosts(json.data ?? [])
+    } catch {
+      // 401 redirects to login; other errors leave the list unchanged
+    }
   }
 
   useEffect(() => {
-    fetch(`${API}/api/blog/admin/all`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-      .then((r) => r.json())
+    adminFetch<{ data: Post[] }>('/api/blog/admin/all')
       .then((json) => setPosts(json.data ?? []))
+      .catch(() => {})
   }, [])
 
   const openCreate = () => {
@@ -65,10 +59,9 @@ export default function AdminBlog() {
   }
 
   const openEdit = async (slug: string) => {
-    const res = await fetch(`${API}/api/blog/admin/${slug}`, {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    const json = await res.json()
+    const json = await adminFetch<{
+      data: { title: string; slug: string; excerpt: string; content: string; published: boolean }
+    }>(`/api/blog/admin/${slug}`)
     const p = json.data
     setEditSlug(slug)
     setWasPublished(p.published)
@@ -91,42 +84,36 @@ export default function AdminBlog() {
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
-    const body = {
-      title: form.title,
-      slug: form.slug,
-      excerpt: form.excerpt,
-      content: form.content,
-      published: form.published,
-      // only set publishedAt when transitioning draft → published for the first time
-      ...(!wasPublished && form.published ? { publishedAt: new Date().toISOString() } : {}),
-      ...(!form.published ? { publishedAt: null } : {}),
+    try {
+      const body = {
+        title: form.title,
+        slug: form.slug,
+        excerpt: form.excerpt,
+        content: form.content,
+        published: form.published,
+        // only set publishedAt when transitioning draft → published for the first time
+        ...(!wasPublished && form.published ? { publishedAt: new Date().toISOString() } : {}),
+        ...(!form.published ? { publishedAt: null } : {}),
+      }
+      const path = editSlug ? `/api/blog/${editSlug}` : '/api/blog'
+      await adminFetch(path, { method: editSlug ? 'PUT' : 'POST', body: JSON.stringify(body) })
+      await load()
+      cancel()
+    } catch {
+      // error toast is shown by adminFetch
+    } finally {
+      setLoading(false)
     }
-
-    const url = editSlug ? `${API}/api/blog/${editSlug}` : `${API}/api/blog`
-    const method = editSlug ? 'PUT' : 'POST'
-
-    await fetch(url, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${getToken()}`,
-      },
-      body: JSON.stringify(body),
-    })
-
-    await load()
-    cancel()
-    setLoading(false)
   }
 
   const remove = async (slug: string) => {
     if (!confirm('Delete this post?')) return
-    await fetch(`${API}/api/blog/${slug}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
-    await load()
+    try {
+      await adminFetch(`/api/blog/${slug}`, { method: 'DELETE' })
+      await load()
+    } catch {
+      // error toast is shown by adminFetch
+    }
   }
 
   return (
