@@ -3,6 +3,7 @@ import ParticlesBg from '../components/ParticlesBg'
 import TypingText from '../components/TypingText'
 import ScrollReveal from '../components/ScrollReveal'
 import ScrollDown from '../components/ScrollDown'
+import CvDownload from '../components/CvDownload'
 
 // Rendered at request time so `next build` never depends on a running backend.
 export const dynamic = 'force-dynamic'
@@ -111,13 +112,7 @@ export default async function Home() {
             >
               GET IN TOUCH
             </Link>
-            <a
-              href="/cv.pdf"
-              download
-              className="border border-zinc-800 px-8 py-3 font-mono text-xs font-bold tracking-widest text-zinc-600 transition-all duration-300 hover:border-zinc-600 hover:text-zinc-400"
-            >
-              DOWNLOAD CV ↓
-            </a>
+            <CvDownload />
           </div>
 
           {/* Scroll hint */}
