@@ -55,10 +55,10 @@ export default function Contact() {
                 <div className="border border-zinc-800/60 bg-zinc-900/20 p-5 backdrop-blur-sm">
                   <p className="mb-1 font-mono text-xs tracking-widest text-emerald-400">EMAIL</p>
                   <a
-                    href="mailto:ogs1905.com@gmail.com"
+                    href="mailto:ogulcan.tekines@gmail.com"
                     className="text-zinc-400 transition-colors hover:text-white"
                   >
-                    ogs1905.com@gmail.com
+                    ogulcan.tekines@gmail.com
                   </a>
                 </div>
                 <div className="border border-zinc-800/60 bg-zinc-900/20 p-5 backdrop-blur-sm">
