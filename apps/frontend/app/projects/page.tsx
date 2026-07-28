@@ -12,6 +12,7 @@ export const dynamic = 'force-dynamic'
 
 type Project = {
   id: string
+  slug: string
   title: string
   description: string
   techStack: string[]
@@ -67,7 +68,7 @@ export default async function Projects() {
               {featured.map((project, i) => (
                 <ScrollReveal key={project.id} delay={i * 100}>
                   <Link
-                    href={`/projects/${project.id}`}
+                    href={`/projects/${project.slug}`}
                     className="card-glow group block h-full border border-zinc-800/60 bg-zinc-900/20 p-8 backdrop-blur-sm"
                   >
                     <div className="mb-2 flex items-start justify-between">
@@ -112,7 +113,7 @@ export default async function Projects() {
               {rest.map((project, i) => (
                 <ScrollReveal key={project.id} delay={i * 80}>
                   <Link
-                    href={`/projects/${project.id}`}
+                    href={`/projects/${project.slug}`}
                     className="card-glow group flex items-center justify-between border border-zinc-800/60 bg-zinc-900/20 p-6 backdrop-blur-sm"
                   >
                     <div>

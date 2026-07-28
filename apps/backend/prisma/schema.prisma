@@ -10,6 +10,7 @@ datasource db {
 model Project {
   id          String   @id @default(cuid())
   title       String
+  slug        String   @unique
   description String
   techStack   String[]
   githubUrl   String?

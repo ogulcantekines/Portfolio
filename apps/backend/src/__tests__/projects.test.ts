@@ -27,7 +27,12 @@ describe('projects endpoint', () => {
 
     it('returns created projects wrapped in pagination metadata', async () => {
       await prisma.project.create({
-        data: { title: 'Nmap Wrapper', description: 'A port scanner', techStack: ['Go'] },
+        data: {
+          title: 'Nmap Wrapper',
+          slug: 'nmap-wrapper',
+          description: 'A port scanner',
+          techStack: ['Go'],
+        },
       })
 
       const res = await request(app).get('/api/projects')
@@ -41,7 +46,13 @@ describe('projects endpoint', () => {
     it('paginates results with ?page and ?limit', async () => {
       for (const n of [1, 2, 3]) {
         await prisma.project.create({
-          data: { title: `Project ${n}`, description: 'x', techStack: ['Go'], order: n },
+          data: {
+            title: `Project ${n}`,
+            slug: `project-${n}`,
+            description: 'x',
+            techStack: ['Go'],
+            order: n,
+          },
         })
       }
 
@@ -63,7 +74,12 @@ describe('projects endpoint', () => {
       const res = await request(app)
         .post('/api/projects')
         .set('Authorization', `Bearer ${token}`)
-        .send({ title: 'New Project', description: 'Created in a test', techStack: ['TypeScript'] })
+        .send({
+          title: 'New Project',
+          slug: 'new-project',
+          description: 'Created in a test',
+          techStack: ['TypeScript'],
+        })
 
       expect(res.status).toBe(201)
       expect(res.body.data.title).toBe('New Project')

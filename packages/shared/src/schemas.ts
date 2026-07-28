@@ -10,6 +10,11 @@ export type ContactInput = z.infer<typeof contactSchema>
 
 export const projectSchema = z.object({
   title: z.string().min(1).max(200),
+  slug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9-]+$/, 'slug may only contain lowercase letters, numbers, and hyphens'),
   description: z.string().min(1).max(2000),
   techStack: z.array(z.string().min(1).max(50)).max(30),
   githubUrl: z.string().url().nullish(),

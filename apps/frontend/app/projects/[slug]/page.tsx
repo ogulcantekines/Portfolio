@@ -13,9 +13,9 @@ type Project = {
   featured: boolean
 }
 
-async function getProject(id: string): Promise<Project | null> {
+async function getProject(slug: string): Promise<Project | null> {
   try {
-    const res = await fetch(`${process.env.API_URL}/api/projects/${id}`, {
+    const res = await fetch(`${process.env.API_URL}/api/projects/${slug}`, {
       next: { revalidate: 60 },
     })
     if (!res.ok) return null
@@ -29,10 +29,10 @@ async function getProject(id: string): Promise<Project | null> {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ slug: string }>
 }): Promise<Metadata> {
-  const { id } = await params
-  const project = await getProject(id)
+  const { slug } = await params
+  const project = await getProject(slug)
   if (!project) return { title: 'Project not found' }
   return {
     title: project.title,
@@ -41,9 +41,9 @@ export async function generateMetadata({
   }
 }
 
-export default async function ProjectDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const project = await getProject(id)
+export default async function ProjectDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const project = await getProject(slug)
 
   if (!project) notFound()
 
