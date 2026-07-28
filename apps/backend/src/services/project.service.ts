@@ -15,14 +15,15 @@ export const getFeaturedProjects = async () => {
   })
 }
 
-export const getProjectById = async (id: string) => {
+export const getProjectBySlug = async (slug: string) => {
   return prisma.project.findUnique({
-    where: { id },
+    where: { slug },
   })
 }
 
 export const createProject = async (data: {
   title: string
+  slug: string
   description: string
   techStack: string[]
   githubUrl?: string | null
@@ -38,6 +39,7 @@ export const updateProject = async (
   id: string,
   data: {
     title?: string
+    slug?: string
     description?: string
     techStack?: string[]
     githubUrl?: string | null

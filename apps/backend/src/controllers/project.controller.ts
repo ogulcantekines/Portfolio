@@ -22,9 +22,9 @@ export const getFeatured = async (_req: Request, res: Response, next: NextFuncti
   }
 }
 
-export const getById = async (req: Request, res: Response, next: NextFunction) => {
+export const getBySlug = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const project = await projectService.getProjectById(req.params.id)
+    const project = await projectService.getProjectBySlug(req.params.slug)
     if (!project) {
       res.status(404).json({ error: 'Project not found' })
       return

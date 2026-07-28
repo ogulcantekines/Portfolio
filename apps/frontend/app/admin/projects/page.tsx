@@ -6,6 +6,7 @@ import { adminFetch } from '@/lib/adminApi'
 interface Project {
   id: string
   title: string
+  slug: string
   description: string
   techStack: string[]
   githubUrl: string | null
@@ -19,6 +20,7 @@ const API = process.env.NEXT_PUBLIC_API_URL
 
 const emptyForm = {
   title: '',
+  slug: '',
   description: '',
   techStack: '',
   githubUrl: '',
@@ -57,6 +59,7 @@ export default function AdminProjects() {
     setEditId(p.id)
     setForm({
       title: p.title,
+      slug: p.slug,
       description: p.description,
       techStack: p.techStack.join(', '),
       githubUrl: p.githubUrl ?? '',
@@ -81,6 +84,7 @@ export default function AdminProjects() {
     try {
       const body = {
         title: form.title,
+        slug: form.slug,
         description: form.description,
         techStack: form.techStack
           .split(',')
@@ -150,6 +154,21 @@ export default function AdminProjects() {
                 className="w-full border border-zinc-800 bg-black px-3 py-2 font-mono text-sm text-white outline-none focus:border-emerald-500/50"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="mb-1 block font-mono text-xs text-zinc-500">
+              Slug * <span className="text-zinc-600">(URL: /projects/your-slug)</span>
+            </label>
+            <input
+              required
+              value={form.slug}
+              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+              placeholder="my-project"
+              pattern="[a-z0-9\-]+"
+              title="lowercase letters, numbers, and hyphens only"
+              className="w-full border border-zinc-800 bg-black px-3 py-2 font-mono text-sm text-white outline-none focus:border-emerald-500/50"
+            />
           </div>
 
           <div>
