@@ -1,0 +1,29 @@
+# Dependencies — reinstalled fresh inside the image
+**/node_modules
+
+# Build outputs — rebuilt inside the image, never copy the host's
+**/dist
+apps/frontend/.next
+
+# Secrets & local env — injected at runtime, NEVER baked into an image
+**/.env
+**/.env.*
+
+# Version control & CI
+.git
+.gitignore
+.github
+
+# Editor / OS junk
+.vscode
+.idea
+**/.DS_Store
+
+# Logs & test artifacts
+**/*.log
+**/coverage
+
+# Docker files themselves — not needed inside the image
+**/Dockerfile
+.dockerignore
+docker-compose*.yml
