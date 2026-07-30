@@ -11,6 +11,12 @@ import { logger } from './lib/logger'
 
 const app: Express = express()
 
+// Behind nginx (reverse proxy): trust the first hop so req.ip reflects the real
+// client (from X-Forwarded-For), not nginx's container IP. Required for correct
+// per-client rate limiting. With Cloudflare added later this becomes a 2-hop
+// chain — revisit then (nginx real_ip, or 'trust proxy' = 2).
+app.set('trust proxy', 1)
+
 app.use(pinoHttp({ logger }))
 
 app.use(helmet())
