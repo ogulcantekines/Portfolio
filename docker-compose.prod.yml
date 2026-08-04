@@ -66,15 +66,17 @@ services:
   # --- nginx (reverse proxy) -----------------------------------------------
   # The ONLY service that publishes ports. Routes by path: /api/* -> backend,
   # everything else -> frontend. Config is mounted read-only so it can change
-  # without rebuilding an image. Port 443 + TLS are added in Phase B (domain).
+  # without rebuilding an image. Serves HTTPS on 443 with the Cloudflare Origin
+  # Certificate (mounted from ./infra/certs, which is gitignored).
   nginx:
     image: nginx:1.27-alpine
     restart: unless-stopped
     ports:
       - '80:80'
-      # - '443:443'   # Phase B: enable together with a TLS server block
+      - '443:443'
     volumes:
       - ./infra/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./infra/certs:/etc/nginx/certs:ro
     depends_on:
       - frontend
       - backend
