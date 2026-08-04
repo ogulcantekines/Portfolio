@@ -12,3 +12,6 @@ build
 .DS_Store
 *.pem
 .vercel
+
+# TLS certs (Cloudflare Origin cert) — server-local secrets, never commit
+infra/certs/
