@@ -22,6 +22,12 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 ARG NEXT_PUBLIC_API_URL=""
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
+# Public site URL, baked in for sitemap.xml / robots.txt / OG metadata. Empty ->
+# the code falls back to http://localhost:3000 (wrong in prod); set to the real
+# domain so search engines get correct URLs.
+ARG NEXT_PUBLIC_SITE_URL=""
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+
 # Frontend source, then build (produces .next/standalone + .next/static).
 COPY apps/frontend ./apps/frontend/
 RUN pnpm --filter @portfolio/frontend build
