@@ -11,11 +11,18 @@ import { logger } from './lib/logger'
 
 const app: Express = express()
 
-// Behind nginx (reverse proxy): trust the first hop so req.ip reflects the real
-// client (from X-Forwarded-For), not nginx's container IP. Required for correct
-// per-client rate limiting. With Cloudflare added later this becomes a 2-hop
-// chain — revisit then (nginx real_ip, or 'trust proxy' = 2).
-app.set('trust proxy', 1)
+// Requests arrive as visitor -> Cloudflare -> nginx -> here, so two hops sit in
+// front of us. Express builds [socket address, ...X-Forwarded-For reversed] and
+// treats the first `n` entries as proxies: at 1 it stops on Cloudflare's edge IP
+// and rate limiting buckets every visitor behind that edge together. At 2 it
+// resolves the actual visitor.
+//
+// This trusts the header, so it is only sound while the origin is unreachable
+// except through Cloudflare — otherwise a direct request can forge
+// X-Forwarded-For and dodge the limiter. Closing that path is the firewall work
+// tracked separately; the header is equally forgeable at 1, so this is a strict
+// improvement either way.
+app.set('trust proxy', 2)
 
 app.use(pinoHttp({ logger }))
 
