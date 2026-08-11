@@ -96,3 +96,134 @@ jobs:
 
       - name: Run tests
         run: pnpm --filter '@portfolio/backend' test
+
+  docker:
+    name: Deploy Verification
+    runs-on: ubuntu-latest
+    # Only build images once code quality + tests pass — saves CI minutes.
+    needs: [lint-and-typecheck, test]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build the production images exactly as they ship. `pnpm build` compiles
+      # the source but never exercises the Dockerfiles, so a wrong COPY path or
+      # a broken stage only surfaces at deploy time — this catches it in CI.
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/backend/Dockerfile
+          tags: portfolio-backend:ci
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/frontend/Dockerfile
+          tags: portfolio-frontend:ci
+          load: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=
+            NEXT_PUBLIC_SITE_URL=https://ogulcantekines.com
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # nginx.prod.conf terminates TLS, so the stack cannot start without a
+      # certificate. The real Cloudflare Origin cert is server-local and
+      # gitignored, so generate a throwaway one — this keeps CI exercising the
+      # same nginx config that production runs, rather than a stripped-down copy.
+      - name: Generate a throwaway origin certificate
+        run: |
+          mkdir -p infra/certs
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 \
+            -keyout infra/certs/origin.key -out infra/certs/origin.pem \
+            -subj "/CN=localhost" \
+            -addext "subjectAltName=DNS:localhost,DNS:ogulcantekines.com,DNS:www.ogulcantekines.com"
+
+      # Same variable names production uses, throwaway values. JWT_SECRET has to
+      # satisfy the length and character-variety checks in src/lib/env.ts, or the
+      # backend refuses to start.
+      - name: Write the CI environment file
+        run: |
+          cat > .env.prod <<'EOF'
+          POSTGRES_USER=portfolio
+          POSTGRES_PASSWORD=portfolio
+          POSTGRES_DB=portfolio
+          JWT_SECRET=ci-e2e-secret-with-enough-variety-1234567890
+          ADMIN_PASSWORD=ci-e2e-admin-password
+          FRONTEND_URL=https://localhost
+          NEXT_PUBLIC_API_URL=
+          EOF
+
+      # Point the compose services at the images built above. Without this,
+      # compose would rebuild them from scratch and CI would verify a different
+      # artifact than the one it just built.
+      - name: Pin the pre-built images
+        run: |
+          cat > docker-compose.ci.yml <<'EOF'
+          services:
+            backend:
+              image: portfolio-backend:ci
+            frontend:
+              image: portfolio-frontend:ci
+          EOF
+
+      - name: Start the production stack
+        run: |
+          docker compose -f docker-compose.prod.yml -f docker-compose.ci.yml \
+            --env-file .env.prod up -d
+
+      # Every check goes through nginx on the published port, which is the path
+      # a real visitor takes. Hitting the containers directly would skip exactly
+      # what deploys break: routing, compose DNS and service startup order.
+      - name: Verify the stack through nginx
+        run: |
+          echo "Waiting for the stack to answer ..."
+          for i in $(seq 1 60); do
+            if curl -ksf https://localhost/api/projects >/dev/null 2>&1; then
+              echo "Stack is up"
+              break
+            fi
+            if [ "$i" -eq 60 ]; then
+              echo "Stack did not become ready in time"
+              exit 1
+            fi
+            sleep 2
+          done
+
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost/)
+          [ "$code" = "301" ] || { echo "Expected 301 from http://, got $code"; exit 1; }
+          echo "OK  http -> https redirect"
+
+          # The paginated response shape proves a real Prisma query ran against
+          # postgres — a proxy error page or a stub would not produce it.
+          body=$(curl -ksf https://localhost/api/projects)
+          echo "$body" | grep -q '"pagination"' || {
+            echo "Unexpected API response: $body"; exit 1;
+          }
+          echo "OK  nginx -> backend -> postgres"
+
+          html=$(curl -ksf https://localhost/)
+          echo "$html" | grep -q '</html>' || {
+            echo "Homepage did not render a complete document"; exit 1;
+          }
+          echo "OK  nginx -> frontend"
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: |
+          docker compose -f docker-compose.prod.yml -f docker-compose.ci.yml \
+            --env-file .env.prod logs --tail 100
+
+      - name: Tear down the stack
+        if: always()
+        run: |
+          docker compose -f docker-compose.prod.yml -f docker-compose.ci.yml \
+            --env-file .env.prod down -v
