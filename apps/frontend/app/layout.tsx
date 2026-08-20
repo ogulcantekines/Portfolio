@@ -19,6 +19,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  // Canonical tells Google the one authoritative URL for this page, resolved
+  // against metadataBase — so always https and the apex host, regardless of how
+  // the page was reached (http, www, query strings).
+  alternates: { canonical: '/' },
   title: {
     default: 'Oğulcan Tekineş — Offensive Security & DevSecOps',
     template: '%s | Oğulcan Tekineş',
