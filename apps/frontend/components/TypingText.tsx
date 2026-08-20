@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 const lines = [
   '> Offensive Security Researcher',
-  '> Full-Stack Developer',
+  '> DevSecOps Engineer',
   '> Network Engineer',
   '> Penetration Tester',
 ]

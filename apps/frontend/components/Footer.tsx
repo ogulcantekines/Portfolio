@@ -24,7 +24,7 @@ export default function Footer() {
               OT<span className="text-white">_</span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-zinc-500">
-              Offensive Security researcher and Full-Stack Developer building secure systems.
+              Offensive Security researcher and DevSecOps engineer building secure systems.
             </p>
           </div>
 

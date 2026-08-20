@@ -5,6 +5,7 @@ import ScrollReveal from '../../components/ScrollReveal'
 export const metadata: Metadata = {
   title: 'Projects',
   description: 'Security tooling, full-stack apps, and CTF work by Oğulcan Tekineş.',
+  alternates: { canonical: '/projects' },
 }
 
 // Rendered at request time so `next build` never depends on a running backend.

@@ -216,6 +216,33 @@ jobs:
           }
           echo "OK  nginx -> frontend"
 
+          code=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/ \
+            -H "Host: www.ogulcantekines.com")
+          [ "$code" = "301" ] || { echo "Expected 301 from www host, got $code"; exit 1; }
+          echo "OK  www -> apex redirect"
+
+          # The pages fetch server-side but swallow errors and render an empty
+          # shell on failure, so a 200 does not prove the frontend reached the
+          # backend. Create a project through the API, then confirm it surfaces
+          # in the rendered /projects HTML — that exercises the full SSR path.
+          admin_pw=$(grep '^ADMIN_PASSWORD=' .env.prod | cut -d= -f2-)
+          token=$(curl -ksf -X POST https://localhost/api/auth/login \
+            -H 'Content-Type: application/json' \
+            -d "{\"password\":\"$admin_pw\"}" \
+            | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+          [ -n "$token" ] || { echo "Login did not return a token"; exit 1; }
+
+          curl -ksf -X POST https://localhost/api/projects \
+            -H "Authorization: Bearer $token" -H 'Content-Type: application/json' \
+            -d '{"title":"CI SSR Probe","slug":"ci-ssr-probe","description":"created by CI to verify SSR wiring","techStack":["ci"]}' \
+            >/dev/null || { echo "Authenticated project create failed"; exit 1; }
+
+          curl -ksf https://localhost/projects | grep -q "CI SSR Probe" || {
+            echo "Created project did not appear in /projects HTML — SSR wiring broken"
+            exit 1
+          }
+          echo "OK  frontend -> backend SSR wiring"
+
       - name: Dump container logs on failure
         if: failure()
         run: |

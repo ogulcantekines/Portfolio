@@ -5,6 +5,7 @@ import ScrollReveal from '../../components/ScrollReveal'
 export const metadata: Metadata = {
   title: 'Blog',
   description: 'Notes on offensive security, pentesting, and building things.',
+  alternates: { canonical: '/blog' },
 }
 
 // Rendered at request time so `next build` never depends on a running backend.
