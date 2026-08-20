@@ -15,3 +15,7 @@ build
 
 # TLS certs (Cloudflare Origin cert) — server-local secrets, never commit
 infra/certs/
+
+# Personal working notes — list open security gaps, never committed
+TODO.md
+PENTEST-*.md
