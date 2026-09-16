@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# This workflow only reads and builds; the CD workflow is the one that writes.
+permissions:
+  contents: read
+
 jobs:
   lint-and-typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +49,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     services:
       postgres:
@@ -100,6 +106,7 @@ jobs:
   docker:
     name: Deploy Verification
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Only build images once code quality + tests pass — saves CI minutes.
     needs: [lint-and-typecheck, test]
 
