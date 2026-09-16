@@ -9,12 +9,13 @@ FROM node:22-slim AS builder
 RUN corepack enable
 WORKDIR /app
 
-# Workspace manifests (all package.json's so --frozen-lockfile resolves the
-# whole workspace) + root tsconfig.json.
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
+# Workspace manifests. Only the frontend's own package.json is copied: pnpm
+# installs every workspace member whose manifest is present, so copying the
+# backend's would pull express, prisma, vitest and friends into this image.
+# The frontend does not import @portfolio/shared and its tsconfig does not
+# extend the root one, so neither is needed here.
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # NEXT_PUBLIC_* vars are inlined into the client bundle at BUILD time. Empty by
