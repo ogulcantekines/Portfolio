@@ -69,5 +69,9 @@ WORKDIR /app/apps/backend
 
 EXPOSE 5000
 
-# On start: apply any pending DB migrations, then launch the server.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+# On start: apply pending migrations, then replace the shell with node so the
+# server runs as PID 1 and receives SIGTERM directly. A shell would not forward
+# it, costing a 10s SIGKILL wait (exit 137) on every stop. Call the local prisma
+# binary instead of npx, so a missing dependency fails loudly at startup rather
+# than silently reaching the network.
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && exec node dist/index.js"]
