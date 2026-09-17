@@ -126,8 +126,8 @@ jobs:
           file: apps/backend/Dockerfile
           tags: portfolio-backend:ci
           load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
       - name: Build frontend image
         uses: docker/build-push-action@v6
@@ -139,8 +139,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=
             NEXT_PUBLIC_SITE_URL=https://ogulcantekines.com
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
       # nginx.prod.conf terminates TLS, so the stack cannot start without a
       # certificate. The real Cloudflare Origin cert is server-local and
