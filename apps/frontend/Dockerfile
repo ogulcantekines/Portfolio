@@ -48,6 +48,11 @@ COPY --from=builder /app/apps/frontend/.next/standalone ./
 COPY --from=builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=builder /app/apps/frontend/public ./apps/frontend/public
 
+# Next.js writes its data and image cache here at runtime. Create it as root and
+# hand it to node; everything else stays root-owned so the process cannot modify
+# its own code.
+RUN mkdir -p apps/frontend/.next/cache && chown node:node apps/frontend/.next/cache
+
 # Run as the unprivileged node user (security).
 USER node
 
