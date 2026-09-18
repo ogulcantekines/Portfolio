@@ -9,12 +9,13 @@ FROM node:22-slim AS builder
 RUN corepack enable
 WORKDIR /app
 
-# Workspace manifests (all package.json's so --frozen-lockfile resolves the
-# whole workspace) + root tsconfig.json.
-COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.json ./
+# Workspace manifests. Only the frontend's own package.json is copied: pnpm
+# installs every workspace member whose manifest is present, so copying the
+# backend's would pull express, prisma, vitest and friends into this image.
+# The frontend does not import @portfolio/shared and its tsconfig does not
+# extend the root one, so neither is needed here.
+COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY apps/frontend/package.json ./apps/frontend/
-COPY apps/backend/package.json ./apps/backend/
-COPY packages/shared/package.json ./packages/shared/
 RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # NEXT_PUBLIC_* vars are inlined into the client bundle at BUILD time. Empty by
@@ -46,6 +47,11 @@ COPY --from=builder /app/apps/frontend/.next/standalone ./
 # public/ and .next/static are NOT part of standalone by default — copy them in.
 COPY --from=builder /app/apps/frontend/.next/static ./apps/frontend/.next/static
 COPY --from=builder /app/apps/frontend/public ./apps/frontend/public
+
+# Next.js writes its data and image cache here at runtime. Create it as root and
+# hand it to node; everything else stays root-owned so the process cannot modify
+# its own code.
+RUN mkdir -p apps/frontend/.next/cache && chown node:node apps/frontend/.next/cache
 
 # Run as the unprivileged node user (security).
 USER node

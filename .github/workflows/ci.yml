@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# This workflow only reads and builds; the CD workflow is the one that writes.
+permissions:
+  contents: read
+
 jobs:
   lint-and-typecheck:
     name: Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -39,11 +44,12 @@ jobs:
         run: pnpm --filter '@portfolio/backend' exec tsc --noEmit
 
       - name: Build
-        run: pnpm build
+        run: pnpm --filter './apps/*' build
 
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     services:
       postgres:
@@ -69,7 +75,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -100,6 +106,7 @@ jobs:
   docker:
     name: Deploy Verification
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Only build images once code quality + tests pass — saves CI minutes.
     needs: [lint-and-typecheck, test]
 
@@ -119,8 +126,8 @@ jobs:
           file: apps/backend/Dockerfile
           tags: portfolio-backend:ci
           load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
 
       - name: Build frontend image
         uses: docker/build-push-action@v6
@@ -132,8 +139,8 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=
             NEXT_PUBLIC_SITE_URL=https://ogulcantekines.com
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
       # nginx.prod.conf terminates TLS, so the stack cannot start without a
       # certificate. The real Cloudflare Origin cert is server-local and

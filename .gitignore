@@ -2,12 +2,10 @@ node_modules
 .next
 dist
 build
-.env
-.env.local
-.env.production
-.env.development
-.env.test
-.env.prod
+# Environment files: ignore everything, keep the checked-in examples.
+.env*
+!.env.example
+!.env.*.example
 *.log
 .DS_Store
 *.pem

@@ -31,7 +31,8 @@ apps/
 packages/
   shared/       Zod schemas & shared types (@portfolio/shared)
 infra/
-  nginx.conf    Reverse-proxy config for deployment
+  nginx.prod.conf   nginx config for the production compose stack
+  backup-db.sh      Nightly database backup script
 ```
 
 ## Backend architecture
@@ -104,7 +105,7 @@ pnpm --filter '@portfolio/backend' exec prisma studio   # inspect the database
 
 ## Deployment
 
-The app is designed to run behind an nginx reverse proxy (`infra/nginx.conf`): `/api/*` is routed to the backend (port 5000) and everything else to the Next.js server (port 3000), with TLS termination and security headers. Run `prisma migrate deploy` on the target before starting the backend.
+Production runs as four containers from `docker-compose.prod.yml`: PostgreSQL, the backend, the frontend and nginx. nginx (`infra/nginx.prod.conf`) terminates TLS and routes `/api/*` to the backend and everything else to the Next.js server. The backend container applies pending Prisma migrations on start, so no manual `migrate deploy` step is needed. Operations and recovery steps are in `docs/RECOVERY.md`.
 
 ## License
 
