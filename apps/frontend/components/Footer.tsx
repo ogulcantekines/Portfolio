@@ -63,10 +63,10 @@ export default function Footer() {
               ))}
               <li>
                 <a
-                  href="mailto:ogs1905.com@gmail.com"
+                  href="mailto:ogulcan.tekines@gmail.com"
                   className="text-sm text-zinc-500 transition-colors hover:text-white"
                 >
-                  ogs1905.com@gmail.com
+                  ogulcan.tekines@gmail.com
                 </a>
               </li>
             </ul>
